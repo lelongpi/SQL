@@ -1,0 +1,19 @@
+SELECT a.request_at as Day , CONVERT (COALESCE(ROUND(courses_cancelled/courses,2),'0.00' ) , DECIMAL(65,2) ) as 'Cancellation Rate' FROM 
+(SELECT t.request_at, COUNT(DISTINCT t.id) AS courses FROM Trips t
+INNER JOIN Users uc
+ON t.client_id = uc.users_id AND uc.banned = 'No' 
+INNER JOIN Users ud
+ON t.driver_id = ud.users_id AND ud.banned = 'No'
+GROUP BY t.request_at) A
+LEFT JOIN
+(SELECT t.request_at, COUNT(DISTINCT t.id) AS courses_cancelled FROM Trips t
+INNER JOIN Users uc
+ON t.client_id = uc.users_id AND uc.banned = 'No' 
+INNER JOIN Users ud
+ON t.driver_id = ud.users_id AND ud.banned = 'No'
+ WHERE t.status <>'completed'
+GROUP BY t.request_at
+) B
+
+ON a.request_at = b.request_at
+WHERE a.request_at BETWEEN "2013-10-01" AND "2013-10-03" 
